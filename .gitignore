@@ -3,3 +3,14 @@
 /*.tex
 /*.pdf
 /img/*
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pkl
+*.db
+*.sqlite
+*.log
+*.coverage
+*.egg-info/
+*.venv/
