@@ -4,11 +4,12 @@ import os
 import sys
 import subprocess
 from datetime import date
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 from pathlib import Path
 import requests
 from bs4 import BeautifulSoup
 import yaml
+import re
 
 def fetch_html(url, output_file):
     print("🌐 Downloading HTML...")
@@ -41,7 +42,62 @@ def convert_to_markdown(html_file, md_file):
     print("📝 Converting HTML to Markdown...")
     subprocess.run(["pandoc", html_file, "-f", "html", "-t", "markdown", "-o", md_file], check=True)
 
-def insert_metadata(md_file, metadata):
+def download_images(md_file, slug):
+    print("🖼️  Downloading and processing images...")
+    
+    # Create img directory
+    img_dir = Path("img")
+    img_dir.mkdir(exist_ok=True)
+    
+    with open(md_file, "r", encoding="utf-8") as f:
+        content = f.read()
+    
+    # Find all image URLs
+    image_pattern = r'<img[^>]*src="([^"]*)"[^>]*alt="([^"]*)"[^>]*>'
+    images = re.findall(image_pattern, content)
+    
+    downloaded_images = {}
+    
+    for i, (img_url, alt_text) in enumerate(images):
+        if not img_url.startswith('http'):
+            continue
+            
+        try:
+            # Get file extension
+            parsed_url = urlparse(img_url)
+            ext = Path(parsed_url.path).suffix or '.jpg'
+            
+            # Create filename
+            filename = f"{slug}_image_{i+1}{ext}"
+            img_path = img_dir / filename
+            
+            # Download image
+            print(f"  📥 Downloading: {filename}")
+            response = requests.get(img_url, stream=True)
+            response.raise_for_status()
+            
+            with open(img_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f.write(chunk)
+            
+            downloaded_images[img_url] = {
+                'path': str(img_path),
+                'alt': alt_text,
+                'filename': filename
+            }
+            
+        except Exception as e:
+            print(f"  ⚠️  Failed to download {img_url}: {e}")
+            # Use placeholder for failed downloads
+            downloaded_images[img_url] = {
+                'path': 'example-image-a',
+                'alt': alt_text,
+                'filename': 'example-image-a'
+            }
+    
+    return downloaded_images
+
+def insert_metadata(md_file, metadata, downloaded_images=None):
     import re
     import yaml
 
@@ -53,6 +109,27 @@ def insert_metadata(md_file, metadata):
     
     # 🧹 Cleanup: Remove problematic inline SVG and base64 images that break LaTeX
     content = re.sub(r'!\[[^\]]*\]\(data:image/[^)]*\)', '[Image]', content)
+    
+    # 🖼️ Process downloaded images
+    if downloaded_images:
+        # Replace figure blocks with simple image placeholders
+        def replace_figure(match):
+            img_url = match.group(1)
+            alt_text = match.group(2)
+            
+            if img_url in downloaded_images:
+                img_info = downloaded_images[img_url]
+                if img_info['filename'] == 'example-image-a':
+                    return f"![{alt_text}](example-image-a)"
+                else:
+                    return f"![{alt_text}]({img_info['path']})"
+            return f"[Image: {alt_text}]"
+        
+        # Replace HTML img tags
+        content = re.sub(r'<img[^>]*src="([^"]*)"[^>]*alt="([^"]*)"[^>]*>', replace_figure, content)
+        
+        # Replace figure blocks
+        content = re.sub(r'<figure[^>]*>.*?<img[^>]*src="([^"]*)"[^>]*alt="([^"]*)"[^>]*>.*?</figure>', replace_figure, content, flags=re.DOTALL)
     
     # 🧹 Cleanup: Remove problematic characters that break LaTeX
     # Fix URLs with problematic characters for LaTeX
@@ -123,6 +200,9 @@ def main():
     fetch_html(url, html_file)
     title, author = extract_metadata(html_file)
     convert_to_markdown(html_file, md_file)
+    
+    # Download images
+    downloaded_images = download_images(md_file, slug)
 
     editor = os.getenv("USER") or os.getenv("USERNAME") or "Editor"
 
@@ -158,7 +238,7 @@ def main():
         "editor": editor,
         "date": today
     }
-    insert_metadata(md_file, metadata)
+    insert_metadata(md_file, metadata, downloaded_images)
     generate_pdf(md_file, tex_template, pdf_file)
     print(f"✅ Done! Generated files:")
     print(f"   📄 PDF: {pdf_file}")

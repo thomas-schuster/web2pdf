@@ -9,13 +9,19 @@
 \usepackage{titlesec}
 \usepackage{xcolor}
 \usepackage{etoolbox}
+\usepackage{float}
+
+% Redefine pandocbounded to be simpler
 \newenvironment{pandocbounded}
-  {\par\medskip\noindent\begin{minipage}{\linewidth}}
-  {\end{minipage}\medskip}
+  {\par\medskip\noindent}
+  {\medskip}
 
 % Define tightlist command for pandoc
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% Better image handling
+\setkeys{Gin}{width=0.8\textwidth,height=0.6\textheight,keepaspectratio}
 
 \setmainfont{Times New Roman}
 \pagestyle{fancy}
