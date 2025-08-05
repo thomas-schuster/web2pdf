@@ -11,16 +11,19 @@
 \usepackage{etoolbox}
 \usepackage{float}
 
-% Redefine pandocbounded to be simpler
+% Disable pandocbounded for images - just pass through
 \newenvironment{pandocbounded}
-  {\par\medskip\noindent}
-  {\medskip}
+  {}
+  {}
 
 % Define tightlist command for pandoc
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 
-% Better image handling
+% Set image path
+\graphicspath{{./}{./img/}}
+
+% Better image handling - set default image options
 \setkeys{Gin}{width=0.8\textwidth,height=0.6\textheight,keepaspectratio}
 
 \setmainfont{Times New Roman}

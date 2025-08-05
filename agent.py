@@ -81,7 +81,7 @@ def download_images(md_file, slug):
                     f.write(chunk)
             
             downloaded_images[img_url] = {
-                'path': str(img_path),
+                'path': f"img/{filename}",  # Include img/ prefix for correct path
                 'alt': alt_text,
                 'filename': filename
             }
@@ -167,6 +167,22 @@ def generate_pdf(md_file, tex_template, pdf_file):
         "-o", tex_file,
         "--highlight-style=pygments"
     ], check=True)
+    
+    # Post-process LaTeX file to fix image handling
+    with open(tex_file, 'r', encoding='utf-8') as f:
+        latex_content = f.read()
+    
+    # Simply remove pandocbounded wrapper but keep includegraphics
+    import re
+    latex_content = re.sub(
+        r'\\pandocbounded\{(\\includegraphics\[[^\]]*\]\{[^}]+\})\}',
+        r'\1',
+        latex_content
+    )
+    
+    # Write back the corrected LaTeX
+    with open(tex_file, 'w', encoding='utf-8') as f:
+        f.write(latex_content)
     
     # Generate PDF from LaTeX
     print(f"📄 Creating PDF from LaTeX: {pdf_file}")
