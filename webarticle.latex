@@ -1,0 +1,47 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{fontspec}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{qrcode}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{etoolbox}
+\newenvironment{pandocbounded}
+  {\par\medskip\noindent\begin{minipage}{\linewidth}}
+  {\end{minipage}\medskip}
+
+% Define tightlist command for pandoc
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\setmainfont{Times New Roman}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    {\LARGE\bfseries $title$ \par}
+    \vspace{1.5cm}
+    {\large Originally written by \textbf{$author$} \par}
+    \vspace{1cm}
+    {\large Source: \par}
+    \vspace{0.3cm}
+    {\small\url{$url$} \par}
+    \vspace{0.5cm}
+    \href{$url$}{\qrcode[height=3cm]{$url$}}
+    \vfill
+    {\small This article was retrieved from the web and converted using \texttt{wget} and \texttt{pandoc}. Minor formatting corrections were made manually.\par}
+    \vspace{0.3cm}
+    {\small Document prepared by $editor$ on $date$.\par}
+\end{titlepage}
+
+$body$
+
+\end{document}
