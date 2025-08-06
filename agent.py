@@ -73,11 +73,11 @@ def download_images(md_file, slug):
             # Get file extension
             parsed_url = urlparse(img_url)
             ext = Path(parsed_url.path).suffix or ".jpg"
-            
+
             # Convert GIF to JPG for LaTeX compatibility
-            if ext.lower() == '.gif':
-                ext = '.jpg'
-                print(f"  🔄 Converting GIF to JPG for LaTeX compatibility")
+            if ext.lower() == ".gif":
+                ext = ".jpg"
+                print("  🔄 Converting GIF to JPG for LaTeX compatibility")
 
             # Create filename
             filename = f"{slug}_image_{i+1}{ext}"
@@ -89,21 +89,21 @@ def download_images(md_file, slug):
             response.raise_for_status()
 
             # For GIF files, download as temporary file first, then convert
-            if img_url.lower().endswith('.gif'):
+            if img_url.lower().endswith(".gif"):
                 temp_path = img_dir / f"temp_{filename}"
                 with open(temp_path, "wb") as f:
                     for chunk in response.iter_content(chunk_size=8192):
                         f.write(chunk)
-                
+
                 # Convert GIF to JPEG
                 try:
-                    print(f"  🔄 Converting GIF to JPG...")
+                    print("  🔄 Converting GIF to JPG...")
                     with Image.open(temp_path) as img:
                         # Convert to RGB mode (required for JPEG)
-                        if img.mode in ('RGBA', 'P'):
-                            img = img.convert('RGB')
+                        if img.mode in ("RGBA", "P"):
+                            img = img.convert("RGB")
                         # Save first frame as JPEG
-                        img.save(img_path, 'JPEG', quality=90)
+                        img.save(img_path, "JPEG", quality=90)
                     # Remove temporary file
                     temp_path.unlink()
                 except Exception as e:
@@ -142,7 +142,7 @@ def insert_metadata(md_file, metadata, downloaded_images=None):
 
     # 🧹 Cleanup: Remove problematic inline SVG and base64 images that break LaTeX
     content = re.sub(r"!\[[^\]]*\]\(data:image/[^)]*\)", "[Image]", content)
-    
+
     # 🧹 Cleanup: Remove problematic Next.js image URLs that break LaTeX
     content = re.sub(r"!\[[^\]]*\]\(/_next/image/[^)]*\)", "[Image]", content)
 

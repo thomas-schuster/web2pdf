@@ -47,19 +47,19 @@ class TestLaTeXCompiler:
         assert captured.out == ""
 
     @patch("latex_compiler.subprocess.run")
-    def test_check_xelatex_available(self, mock_run):
-        """Test XeLaTeX availability check when XeLaTeX is available"""
+    def test_check_lualatex_available(self, mock_run):
+        """Test LuaLaTeX availability check when LuaLaTeX is available"""
         mock_run.return_value = Mock()
         compiler = LaTeXCompiler()
-        assert compiler.check_xelatex() is True
+        assert compiler.check_lualatex() is True
         mock_run.assert_called_once()
 
     @patch("latex_compiler.subprocess.run")
-    def test_check_xelatex_not_available(self, mock_run):
-        """Test XeLaTeX availability check when XeLaTeX is not available"""
+    def test_check_lualatex_not_available(self, mock_run):
+        """Test LuaLaTeX availability check when LuaLaTeX is not available"""
         mock_run.side_effect = FileNotFoundError()
         compiler = LaTeXCompiler()
-        assert compiler.check_xelatex() is False
+        assert compiler.check_lualatex() is False
 
     def test_get_file_size_nonexistent(self):
         """Test file size calculation for non-existent file"""
@@ -89,9 +89,9 @@ class TestLaTeXCompiler:
             result = compiler.compile_document(tmp_file.name)
             assert result is False
 
-    @patch.object(LaTeXCompiler, "check_xelatex")
-    def test_compile_document_no_xelatex(self, mock_check):
-        """Test compilation when XeLaTeX is not available"""
+    @patch.object(LaTeXCompiler, "check_lualatex")
+    def test_compile_document_no_lualatex(self, mock_check):
+        """Test compilation when LuaLaTeX is not available"""
         mock_check.return_value = False
         compiler = LaTeXCompiler(verbose=False)
 
