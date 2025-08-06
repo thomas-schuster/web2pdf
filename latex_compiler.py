@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 LaTeX Compiler Module for Web2PDF Agent
-Provides functionality to compile LaTeX documents with XeLaTeX engine
+Provides functionality to compile LaTeX documents with LuaLaTeX engine for better image format support
 """
 
 import os
@@ -23,7 +23,7 @@ class Colors:
 
 
 class LaTeXCompiler:
-    """Enhanced LaTeX compiler with better error handling and output"""
+    """Enhanced LaTeX compiler with LuaLaTeX for better image format support"""
 
     def __init__(self, verbose: bool = True):
         """Initialize the LaTeX compiler
@@ -38,18 +38,18 @@ class LaTeXCompiler:
         if self.verbose:
             print(f"{color}{message}{Colors.NC}")
 
-    def check_xelatex(self) -> bool:
-        """Check if XeLaTeX is available"""
+    def check_lualatex(self) -> bool:
+        """Check if LuaLaTeX is available"""
         try:
-            subprocess.run(["xelatex", "--version"], capture_output=True, text=True, check=True)
+            subprocess.run(["lualatex", "--version"], capture_output=True, text=True, check=True)
             return True
         except (subprocess.CalledProcessError, FileNotFoundError):
             return False
 
-    def run_xelatex(self, tex_file: Path, output_dir: Path) -> Tuple[bool, str]:
-        """Run XeLaTeX compilation"""
-        if not self.check_xelatex():
-            return False, "XeLaTeX not found. Please install TeXLive or MiKTeX."
+    def run_lualatex(self, tex_file: Path, output_dir: Path) -> Tuple[bool, str]:
+        """Run LuaLaTeX compilation"""
+        if not self.check_lualatex():
+            return False, "LuaLaTeX not found. Please install TeXLive or MiKTeX."
 
         # Change to output directory for compilation
         original_cwd = os.getcwd()
@@ -57,17 +57,17 @@ class LaTeXCompiler:
         try:
             os.chdir(output_dir)
 
-            cmd = ["xelatex", "-interaction=nonstopmode", "-halt-on-error", str(tex_file.resolve())]
+            cmd = ["lualatex", "-interaction=nonstopmode", "-halt-on-error", str(tex_file.resolve())]
 
             self.print_colored(f"🔄 Running: {' '.join(cmd)}", Colors.BLUE)
 
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)  # 2 minute timeout
 
             if result.returncode == 0:
-                self.print_colored("✅ XeLaTeX compilation successful", Colors.GREEN)
+                self.print_colored("✅ LuaLaTeX compilation successful", Colors.GREEN)
                 return True, result.stdout
             else:
-                self.print_colored("❌ XeLaTeX compilation failed", Colors.RED)
+                self.print_colored("❌ LuaLaTeX compilation failed", Colors.RED)
                 error_msg = f"Exit code: {result.returncode}\n"
                 error_msg += f"STDOUT:\n{result.stdout}\n"
                 error_msg += f"STDERR:\n{result.stderr}"
@@ -132,7 +132,7 @@ class LaTeXCompiler:
         self.print_colored(f"📁 Output directory: {output_dir}", Colors.BLUE)
 
         # First pass
-        success, output = self.run_xelatex(tex_file, output_dir)
+        success, output = self.run_lualatex(tex_file, output_dir)
 
         if not success:
             self.print_colored("❌ First pass failed", Colors.RED)
@@ -143,7 +143,7 @@ class LaTeXCompiler:
         # Second pass for references/TOC (if requested)
         if two_pass:
             self.print_colored("🔄 Running second pass for references...", Colors.BLUE)
-            success, output = self.run_xelatex(tex_file, output_dir)
+            success, output = self.run_lualatex(tex_file, output_dir)
 
             if not success:
                 self.print_colored("❌ Second pass failed", Colors.RED)

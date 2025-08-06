@@ -11,6 +11,7 @@ from urllib.parse import urlparse
 import requests
 import yaml
 from bs4 import BeautifulSoup
+from PIL import Image
 
 
 def fetch_html(url, output_file):
@@ -72,6 +73,11 @@ def download_images(md_file, slug):
             # Get file extension
             parsed_url = urlparse(img_url)
             ext = Path(parsed_url.path).suffix or ".jpg"
+            
+            # Convert GIF to JPG for LaTeX compatibility
+            if ext.lower() == '.gif':
+                ext = '.jpg'
+                print(f"  🔄 Converting GIF to JPG for LaTeX compatibility")
 
             # Create filename
             filename = f"{slug}_image_{i+1}{ext}"
@@ -82,9 +88,32 @@ def download_images(md_file, slug):
             response = requests.get(img_url, stream=True)
             response.raise_for_status()
 
-            with open(img_path, "wb") as f:
-                for chunk in response.iter_content(chunk_size=8192):
-                    f.write(chunk)
+            # For GIF files, download as temporary file first, then convert
+            if img_url.lower().endswith('.gif'):
+                temp_path = img_dir / f"temp_{filename}"
+                with open(temp_path, "wb") as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
+                
+                # Convert GIF to JPEG
+                try:
+                    print(f"  🔄 Converting GIF to JPG...")
+                    with Image.open(temp_path) as img:
+                        # Convert to RGB mode (required for JPEG)
+                        if img.mode in ('RGBA', 'P'):
+                            img = img.convert('RGB')
+                        # Save first frame as JPEG
+                        img.save(img_path, 'JPEG', quality=90)
+                    # Remove temporary file
+                    temp_path.unlink()
+                except Exception as e:
+                    print(f"  ⚠️  GIF conversion failed: {e}")
+                    # Fall back to original file
+                    temp_path.rename(img_path)
+            else:
+                with open(img_path, "wb") as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
 
             downloaded_images[img_url] = {
                 "path": f"img/{filename}",  # Include img/ prefix for correct path
@@ -113,6 +142,9 @@ def insert_metadata(md_file, metadata, downloaded_images=None):
 
     # 🧹 Cleanup: Remove problematic inline SVG and base64 images that break LaTeX
     content = re.sub(r"!\[[^\]]*\]\(data:image/[^)]*\)", "[Image]", content)
+    
+    # 🧹 Cleanup: Remove problematic Next.js image URLs that break LaTeX
+    content = re.sub(r"!\[[^\]]*\]\(/_next/image/[^)]*\)", "[Image]", content)
 
     # 🖼️ Process downloaded images
     if downloaded_images:
@@ -255,7 +287,10 @@ def main():
     print("\n🔧 Optional: Advanced LaTeX compilation")
     print("Would you like to compile the LaTeX file with our enhanced compiler?")
     print("(This provides better error handling and detailed output)")
-    compile_choice = input("Compile LaTeX? (y/N): ").strip().lower()
+    try:
+        compile_choice = input("Compile LaTeX? (y/N): ").strip().lower()
+    except EOFError:
+        compile_choice = "n"  # Default to 'no' if no input available
 
     if compile_choice == "y":
         try:

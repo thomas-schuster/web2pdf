@@ -8,9 +8,10 @@ __pycache__/
 **/*.pyd
 *.so
 
-# Project specific files
+# Project specific files - generated output files only
 /*.html
-/*.md
+/article.md
+/issue-*.md
 /*.tex
 /*.pdf
 /img/*
