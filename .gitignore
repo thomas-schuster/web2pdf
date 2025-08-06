@@ -1,16 +1,32 @@
+# Python bytecode and cache files
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+**/*.pyc
+**/*.pyo
+**/*.pyd
+*.so
+
+# Project specific files
 /*.html
 /*.md
 /*.tex
 /*.pdf
 /img/*
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
+
+# Python cache and build
 *.pkl
 *.db
 *.sqlite
 *.log
 *.coverage
 *.egg-info/
+.pytest_cache/
+
+# Virtual environments  
 *.venv/
+.venv/
+env/
+venv/
+tests/__pycache__/__init__.cpython-313.pyc
