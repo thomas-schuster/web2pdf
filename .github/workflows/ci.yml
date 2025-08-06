@@ -12,7 +12,7 @@ jobs:
     
     strategy:
       matrix:
-        python-version: [3.9, "3.11", "3.12"]
+        python-version: ["3.13"]
     
     steps:
     - name: Checkout code
@@ -28,6 +28,11 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y pandoc texlive-xetex texlive-fonts-recommended
     
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+    
     - name: Cache pip dependencies
       uses: actions/cache@v3
       with:
@@ -38,9 +43,9 @@ jobs:
     
     - name: Install Python dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install -r requirements-dev.txt
+        uv pip install --system --upgrade pip
+        uv pip install --system -r requirements.txt
+        uv pip install --system -r requirements-dev.txt
     
     - name: Lint with flake8
       run: |
@@ -79,20 +84,25 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Set up Python 3.11
+    - name: Set up Python 3.13
       uses: actions/setup-python@v4
       with:
-        python-version: "3.11"
+        python-version: "3.13"
     
     - name: Install system dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y pandoc texlive-xetex texlive-fonts-recommended
     
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+    
     - name: Install Python dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install requests beautifulsoup4 pyyaml
+        uv pip install --system --upgrade pip
+        uv pip install --system requests beautifulsoup4 pyyaml
     
     - name: Test agent with real URL
       run: |

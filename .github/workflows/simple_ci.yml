@@ -1,10 +1,17 @@
-name: CI - Simple Test
+name: Simple CI - Manual Trigger
 
 on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      python-version:
+        description: 'Python version to test with'
+        required: false
+        default: '3.13'
+        type: choice
+        options:
+        - '3.13'
+        - '3.12'
+        - '3.11'
 
 jobs:
   test:
@@ -17,18 +24,23 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.11"
+        python-version: ${{ github.event.inputs.python-version || '3.13' }}
     
     - name: Install system dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y pandoc
     
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+    
     - name: Install Python dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install -r requirements-dev.txt
+        uv pip install --system --upgrade pip
+        uv pip install --system -r requirements.txt
+        uv pip install --system -r requirements-dev.txt
     
     - name: Lint with flake8
       run: |
