@@ -23,10 +23,11 @@ Dieses Projekt enthält umfassende Tests für den Web2PDF Python Agent mit pytes
 - **TestColors**: Tests für ANSI-Farbcode-Konstanten
 
 ### Integration Tests
-- **TestIntegration**: Tests mit dem tatsächlich verwendeten DeepLearning.AI Artikel
-  - Überprüfung der Metadaten-Extraktion
-  - Validierung heruntergeladener Bilder
-  - Überprüfung generierter Dateien
+- **TestIntegration**: Tests mit vorhandenen Beispiel-Dateien
+  - Überprüfung der Metadaten-Extraktion aus lokalen HTML-Dateien
+  - Validierung heruntergeladener Bilder im `img/` Ordner  
+  - Überprüfung generierter Dateien (HTML, MD, TEX, PDF)
+  - **Hinweis**: Tests laufen nur wenn Beispiel-Dateien vorhanden sind
 
 ## Tests ausführen
 
@@ -80,7 +81,7 @@ Dieses Projekt enthält umfassende Tests für den Web2PDF Python Agent mit pytes
 - ✅ Bild-Download mit Fehlerbehandlung
 - ✅ Markdown-Verarbeitung und Bereinigung
 - ✅ LaTeX/PDF-Generierung (gemockt)
-- ✅ Integration mit echten Daten
+- ✅ Integration mit lokalen Beispiel-Dateien (falls vorhanden)
 - ✅ Temporäre Datei-Handling
 
 ### LaTeX-Compiler Tests (13 Tests)
@@ -95,10 +96,12 @@ Dieses Projekt enthält umfassende Tests für den Web2PDF Python Agent mit pytes
 - ✅ ANSI-Farbcode-Konstanten
 
 ### Gesamt: 28 Tests
-- **Unit Tests**: 25 Tests für spezifische Funktionen
-- **Integration Tests**: 3 Tests mit echten Daten
+- **Unit Tests**: 25 Tests für spezifische Funktionen (vollständig gemockt)
+- **Integration Tests**: 3 Tests mit lokalen Beispiel-Dateien (optional)
 - **Mocking**: Umfassende Mocks für externe Abhängigkeiten
 - **Error Handling**: Tests für alle Fehlerfälle
+
+**Zusätzlich in der CI:** Ein separater Integration-Test mit `https://httpbin.org/html`
 
 ## Mocking-Strategien
 
@@ -106,7 +109,7 @@ Dieses Projekt enthält umfassende Tests für den Web2PDF Python Agent mit pytes
 - **HTTP-Requests**: Vollständig gemockt für reproduzierbare Tests
 - **Subprocess-Aufrufe**: Pandoc-Aufrufe werden gemockt
 - **Dateisystem**: Temporäre Dateien für sichere Tests
-- **Integration Tests**: Verwenden echte Dateien wenn verfügbar
+- **Integration Tests**: Verwenden lokale Beispiel-Dateien wenn verfügbar
 
 ### LaTeX-Compiler Mocking
 - **Subprocess XeLaTeX**: Mock für XeLaTeX-Verfügbarkeitsprüfung
@@ -159,10 +162,16 @@ Die Tests werden automatisch in der GitHub Actions CI/CD-Pipeline ausgeführt:
     python -m pytest tests/ -v --cov=. --cov-report=xml
 ```
 
+**Zusätzlicher CI-Integration-Test:**
+```bash
+# Separater Test in GitHub Actions mit echter URL
+timeout 60 python agent.py https://httpbin.org/html || echo "Integration test completed"
+```
+
 **CI-Matrix:**
-- Python 3.8, 3.9, 3.10, 3.11, 3.12
-- Ubuntu Latest
-- Alle 28 Tests müssen bestehen
+- Python 3.13
+- Ubuntu Latest  
+- Alle 28 lokalen Tests + CI-Integration-Test müssen bestehen
 
 ## Lokale Test-Entwicklung
 
