@@ -1,3 +1,5 @@
+[![Linting and Testing](https://github.com/thomas-schuster/web2pdf/actions/workflows/ci.yml/badge.svg)](https://github.com/thomas-schuster/web2pdf/actions/workflows/ci.yml)
+
 # Web2PDF Python Agent
 
 Ein Python-Agent zum Konvertieren von Web-Artikeln in professionelle PDF-Dokumente mit automatischer Bildverarbeitung, interaktiver Metadaten-Bearbeitung und erweiterten LaTeX-Kompilierungsoptionen.
@@ -31,7 +33,7 @@ Ein Python-Agent zum Konvertieren von Web-Artikeln in professionelle PDF-Dokumen
    # Windows
    # Download von https://pandoc.org/installing.html
    ```
-3. **XeLaTeX** für PDF-Generierung:
+3. **LuaLaTeX** für PDF-Generierung:
    ```bash
    # macOS
    brew install --cask mactex
@@ -40,7 +42,7 @@ Ein Python-Agent zum Konvertieren von Web-Artikeln in professionelle PDF-Dokumen
    sudo apt-get install texlive-luatex texlive-fonts-recommended
    ```
    
-   **Hinweis:** Das System verwendet LuaLaTeX anstatt XeLaTeX für bessere Bildformat-Unterstützung (GIF → JPEG Konvertierung).
+   **Hinweis:** Das System verwendet LuaLaTeX für verbesserte Bildformat-Unterstützung (GIF → JPEG Konvertierung).
 
 ### Setup
 
@@ -107,7 +109,7 @@ Compile LaTeX? (y/N): y
 ✅ Enhanced LaTeX compilation completed successfully!
 ```
 
-### LaTeX-Compiler-Modul (Eigenständig)
+### LaTeX-Compiler-Modul (eigenständig)
 
 Das LaTeX-Compiler-Modul kann auch eigenständig verwendet werden:
 
@@ -236,13 +238,13 @@ Das Projekt verwendet verschiedene Tools für Code-Qualität:
 
 GitHub Actions führt automatisch bei jedem Push/PR aus:
 - **Linting**: flake8, black, isort, mypy
-- **Tests**: Alle 15 Tests auf Python 3.8-3.12
+- **Tests**: Alle 15 Tests auf Python 3.13
 - **Integration**: Test mit echter URL
 - **Coverage**: Code-Abdeckung mit pytest-cov
 
 ### Lokale CI-Simulation
 
-Testen Sie die CI-Pipeline lokal vor dem Push:
+Die CI-Pipeline kann lokal vor dem Push getestet werden:
 
 ```bash
 # Lokale CI ausführen
@@ -250,35 +252,6 @@ Testen Sie die CI-Pipeline lokal vor dem Push:
 
 # Alternative: act (erfordert Docker)
 act push --container-architecture linux/amd64
-```
-
-## 📁 Projektstruktur
-
-```
-web2pdf_python_agent/
-├── agent.py              # Haupt-Agent-Script
-├── latex_compiler.py     # LaTeX-Compiler-Modul (NEU)
-├── webarticle.latex       # LaTeX-Template
-├── requirements.txt       # Python-Abhängigkeiten
-├── requirements-dev.txt   # Entwicklungs-Abhängigkeiten
-├── README.md              # Diese Datei
-├── local-ci.sh           # Lokale CI-Pipeline Simulation
-├── .github/               # GitHub Actions CI/CD
-│   └── workflows/
-│       ├── ci.yml         # Vollständige CI-Pipeline
-│       └── test-simple.yml # Vereinfachte Test-Pipeline
-├── .flake8               # Linting-Konfiguration
-├── .isort.cfg            # Import-Sortierung
-├── pyproject.toml        # Black-Konfiguration
-├── .venv/                # Virtuelle Python-Umgebung
-├── tests/                # Test-Suite und Test-Dokumentation
-│   ├── __init__.py       # Python-Paket für Tests
-│   ├── test_agent.py     # Test-Suite für Haupt-Agent (15 Tests)
-│   ├── test_latex_compiler.py # Test-Suite für LaTeX-Compiler (13 Tests)
-│   ├── pytest.ini       # Test-Konfiguration
-│   └── README.md         # Test-Dokumentation
-├── img/                  # Heruntergeladene Bilder
-└── issue-312.*           # Beispiel-Ausgabedateien
 ```
 
 ## 🛠️ Erweiterte Konfiguration
@@ -317,10 +290,10 @@ pandoc --version
 which pandoc
 ```
 
-**XeLaTeX Fehler:**
+**LuaTeX Fehler:**
 ```bash
 # Prüfe LaTeX-Installation
-xelatex --version
+luatex --version
 
 # Fehlende Pakete installieren
 sudo tlmgr install <package-name>
@@ -332,14 +305,14 @@ sudo tlmgr install <package-name>
 - Images werden in `img/` Ordner gespeichert
 
 **LaTeX-Kompilierung:**
-- Prüfe `issue-312.tex` auf Syntaxfehler
+- Prüfe `article.tex` auf Syntaxfehler
 - Verwende `--debug` für detaillierte Pandoc-Ausgabe
-- Für erweiterte Diagnostik: `python latex_compiler.py file.tex`
+- Für erweiterte Diagnostik: `python latex_compiler.py article.tex`
 
 **LaTeX-Compiler-Modul Fehler:**
 ```bash
-# XeLaTeX nicht verfügbar
-python latex_compiler.py --help  # Zeigt Hilfe ohne XeLaTeX
+# LuaTeX nicht verfügbar
+python latex_compiler.py --help  # Zeigt Hilfe ohne LuaTeX
 
 # Detaillierte Fehlerdiagnose
 python latex_compiler.py document.tex  # Zeigt farbige Fehlermeldungen
@@ -426,25 +399,11 @@ success = compiler.compile_document(
 )
 
 # Einzelne Methoden
-compiler.check_xelatex()                    # XeLaTeX verfügbar?
+compiler.check_lualatex()                  # LuaTeX verfügbar?
 compiler.get_file_size(Path("file.pdf"))   # Dateigröße berechnen
 compiler.cleanup_aux_files(tex_file)       # Hilfsdateien aufräumen
 compiler.print_colored("Message", Colors.GREEN)  # Farbige Ausgabe
 ```
-
-### Rückgabewerte
-
-```python
-# compile_document() Rückgabe
-success: bool  # True bei erfolgreicher Kompilierung, False bei Fehlern
-
-# check_xelatex() Rückgabe  
-available: bool  # True wenn XeLaTeX verfügbar
-
-# get_file_size() Rückgabe
-size: str  # "1.2 MB", "345.6 KB", etc.
-```
-
 ### Verwendung im Code
 
 ```python
@@ -459,8 +418,8 @@ def main():
     
     compiler = LaTeXCompiler(verbose=True)
     
-    if not compiler.check_xelatex():
-        print("❌ XeLaTeX not available")
+    if not compiler.check_lualatex():
+        print("❌ LuaTeX not available")
         return 1
     
     success = compiler.compile_document(
@@ -475,14 +434,6 @@ if __name__ == "__main__":
     sys.exit(main())
 ```
 
-## 🤝 Beitragen
-
-1. Fork das Repository
-2. Erstelle einen Feature-Branch (`git checkout -b feature/amazing-feature`)
-3. Committe deine Änderungen (`git commit -m 'Add amazing feature'`)
-4. Pushe zum Branch (`git push origin feature/amazing-feature`)
-5. Öffne eine Pull Request
-
 ### Code-Standards
 
 - **PEP 8** für Python-Code
@@ -492,56 +443,24 @@ if __name__ == "__main__":
 
 ## 📄 Lizenz
 
-Dieses Projekt steht unter der MIT-Lizenz. Siehe `LICENSE` Datei für Details.
+Dieses Projekt steht unter der MIT-Lizenz.
 
 ## 🙏 Danksagungen
 
 - **Pandoc**: Für die excellente Dokumentkonvertierung
 - **BeautifulSoup**: Für zuverlässiges HTML-Parsing  
-- **XeLaTeX**: Für professionelle PDF-Generierung
+- **LuaTeX**: Für professionelle PDF-Generierung
 - **Python Community**: Für die großartigen Libraries
+
+## 🤝 Beitragen
+
+1. Fork das Repository
+2. Erstelle einen Feature-Branch (`git checkout -b feature/amazing-feature`)
+3. Committe deine Änderungen (`git commit -m 'Add amazing feature'`)
+4. Pushe zum Branch (`git push origin feature/amazing-feature`)
+5. Öffne eine Pull Request
+
 
 ## 📧 Kontakt
 
 Für Fragen, Verbesserungsvorschläge oder Bug-Reports öffne bitte ein Issue im Repository.
-
-## 🆕 Versionshistorie
-
-### v2.0.0 (August 2025) - LaTeX-Compiler-Integration
-- ✨ **Neues LaTeX-Compiler-Modul**: Eigenständiges Modul für erweiterte LaTeX-Kompilierung
-- 🎨 **Farbige Terminal-Ausgabe**: Verbesserte Benutzerfreundlichkeit mit ANSI-Farben
-- 🔧 **Zwei-Pass-Kompilierung**: Automatische Zweifach-Kompilierung für korrekte Referenzen
-- 📊 **Dateigröße-Anzeige**: Information über generierte PDF-Größe
-- 🧹 **Intelligente Aufräumung**: Automatische Entfernung von LaTeX-Hilfsdateien
-- ⚡ **Timeout-Schutz**: Schutz vor hängenden Kompilierungsprozessen
-- 🧪 **Erweiterte Tests**: 13 zusätzliche Tests für das LaTeX-Compiler-Modul
-- 📖 **Verbesserte Dokumentation**: Umfassende API-Dokumentation und Beispiele
-
-### v1.0.0 - Basis-Funktionalität
-- 🌐 Web-zu-PDF Konvertierung
-- 🖼️ Automatische Bildverarbeitung  
-- 📝 Interaktive Metadaten-Bearbeitung
-- 🔗 QR-Code Integration
-- 🧪 Umfassende Test-Suite
-- 🚀 CI/CD Pipeline
-
-## 📈 Roadmap
-
-### Geplante Features
-- [ ] **GUI-Interface**: Grafische Benutzeroberfläche für einfachere Bedienung
-- [ ] **Batch-Processing**: Verarbeitung mehrerer URLs gleichzeitig
-- [ ] **Template-Gallery**: Sammlung verschiedener LaTeX-Templates
-- [ ] **PDF-Optimierung**: Komprimierung und Optimierung der generierten PDFs
-- [ ] **Docker-Container**: Containerisierte Bereitstellung für einfache Installation
-- [ ] **Web-Interface**: Browser-basierte Benutzeroberfläche
-- [ ] **Cloud-Integration**: Support für Cloud-Storage-Dienste
-
-### Technische Verbesserungen
-- [ ] **Async Processing**: Asynchrone Verarbeitung für bessere Performance
-- [ ] **Caching**: Intelligentes Caching für wiederverwendete Ressourcen
-- [ ] **Plugin-System**: Erweiterbare Architektur für benutzerdefinierte Module
-- [ ] **Multi-Language**: Internationalisierung und Lokalisierung
-
----
-
-*Erstellt mit ❤️ für die Konvertierung von Web-Inhalten zu professionellen Dokumenten.*
