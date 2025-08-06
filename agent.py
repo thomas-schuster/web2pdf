@@ -250,7 +250,35 @@ def main():
     metadata = {"title": title, "author": author, "url": url, "editor": editor, "date": today}
     insert_metadata(md_file, metadata, downloaded_images)
     generate_pdf(md_file, tex_template, pdf_file)
-    print("✅ Done! Generated files:")
+    
+    # Optional LaTeX compilation with our custom module
+    print("\n🔧 Optional: Advanced LaTeX compilation")
+    print("Would you like to compile the LaTeX file with our enhanced compiler?")
+    print("(This provides better error handling and detailed output)")
+    compile_choice = input("Compile LaTeX? (y/N): ").strip().lower()
+    
+    if compile_choice == 'y':
+        try:
+            # Try importing from the current directory
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            if current_dir not in sys.path:
+                sys.path.insert(0, current_dir)
+            
+            from latex_compiler import LaTeXCompiler
+            compiler = LaTeXCompiler()
+            print(f"\n🔄 Compiling {tex_file} with enhanced LaTeX compiler...")
+            success = compiler.compile_document(tex_file)
+            if success:
+                print("✅ Enhanced LaTeX compilation completed successfully!")
+            else:
+                print("❌ Enhanced LaTeX compilation failed. Check the output above for details.")
+        except ImportError as e:
+            print(f"❌ LaTeX compiler module not found: {e}")
+            print("   Make sure latex_compiler.py is in the same directory as agent.py")
+        except Exception as e:
+            print(f"❌ Error during enhanced compilation: {e}")
+    
+    print("\n✅ Done! Generated files:")
     print(f"   📄 PDF: {pdf_file}")
     print(f"   📝 LaTeX: {tex_file}")
     print(f"   📰 Markdown: {md_file}")
